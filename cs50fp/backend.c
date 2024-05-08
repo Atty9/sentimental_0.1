@@ -15,7 +15,7 @@ typedef struct node {
 void nullifier(node* hash_table[], int size);
 void table_filler(node* hash_table[], FILE* file);
 float valence_analyzer(char* text, node* dataset[]);
-int hash_func(char* word); // hash function
+int hash_func(char* word);
 
 int main(void) 
 {
@@ -28,11 +28,13 @@ int main(void)
 
     // Creating hash table
     node* hash_table[hashtable_size];
-    nullifier(hash_table, hashtable_size); // sets pointers to NULL
-    table_filler(hash_table, file); // fills hash table with data from csv
+    // Setting pointers to NULL
+    nullifier(hash_table, hashtable_size);
+    // Filling hash table with data from csv 
+    table_filler(hash_table, file); 
     
-    float valence = valence_analyzer(text, hash_table);
-    printf("Valence = %f", valence); // check syntax
+    float avg_valence = valence_analyzer(text, hash_table);
+    printf("Valence = %f", avg_valence);
 
     fclose(file);
 
@@ -48,7 +50,7 @@ void nullifier(node* hash_table[], int size)
     }
 }
 
-void table_filler(node* hash_table[], FILE* file)
+void table_filler(node* hash_table[], FILE* file) // mind access to the text
 {
     /* Takes hash table and file as input.
     Fills the table with data from the file (assumes csv) */
