@@ -4,16 +4,16 @@
 
 const int dataset_size = 2477; // known size of the csv
 const int hashtable_size = (int) (dataset_size / 0.75); // setting constant hash table size
-const char* text = "This company isn't good, I don't like it, it deceives, lies. Stock bad"; // placeholder text
+char* text = "This company isn't good, I don't like it, it deceives, lies. Stock bad"; // placeholder text
 
 typedef struct node {
     char word[100]; 
     int valence;
-    node* next; // syntax?
+    struct node* next; // syntax?
 } node;
 
 void nullifier(node* hash_table[], int size);
-void table_filler(node* hash_table[], FILE* file);
+int table_filler(node* hash_table[], FILE* file);
 float valence_analyzer(char* text, node* dataset[]);
 int hash_func(char* word);
 
@@ -22,7 +22,7 @@ int main(void)
     // Opening the dataset csv
     FILE *file = fopen("Afinn.csv", "r");
     if (file == NULL) {
-        fprint("Failure opening the file\n");
+        printf("Failure opening the file\n");
         return 1;
     }
 
@@ -31,8 +31,9 @@ int main(void)
     // Setting pointers to NULL
     nullifier(hash_table, hashtable_size);
     // Filling hash table with data from csv 
-    table_filler(hash_table, file); 
+    table_filler(hash_table, file); // what to do with returns? 
     
+    // Getting the average valence of a text
     float avg_valence = valence_analyzer(text, hash_table);
     printf("Valence = %f", avg_valence);
 
@@ -50,7 +51,7 @@ void nullifier(node* hash_table[], int size)
     }
 }
 
-void table_filler(node* hash_table[], FILE* file) // mind access to the text
+int table_filler(node* hash_table[], FILE* file) // mind access to the text
 {
     /* Takes hash table and file as input.
     Fills the table with data from the file (assumes csv) */
@@ -59,12 +60,13 @@ void table_filler(node* hash_table[], FILE* file) // mind access to the text
     int i = 0; // stores line number
 
     // Managing the first line of the csv
-    fgets(buffer, sizeof(buffer), file);
-    if (buffer == NULL)
+    
+    if (fgets(buffer, sizeof(buffer), file) == NULL)
     {
-        printf("CSV is empty. Closing\n");
-        return 2;
+        printf("CSV is empty or unexpected error reading the first line. Closing\n");
+        return 1;
     }
+    i += 1; // needed to account for the first line?
     // Reading the rest of csv line by line, copying data to the hashtable
     while(fgets(buffer, sizeof(buffer), file)) // What about the title line of the csv?
     {
@@ -86,13 +88,14 @@ void table_filler(node* hash_table[], FILE* file) // mind access to the text
                 {
                     cursor = cursor -> next;
                 }
-                strcopy(cursor -> word, word);
-                cursor -> valence = number;
+                strcpy(cursor -> word, word);
+                cursor -> valence = atoi(number); // syntax?
                 cursor -> next = NULL;
             }
         }
         i++;
     }
+    return 0;
 }
 
 float valence_analyzer(char* text, node* hash_table[])
