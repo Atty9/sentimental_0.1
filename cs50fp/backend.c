@@ -1,11 +1,16 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-// Fix analyzer func
+// Fix analyzer func, same logical flaw with pointers as in filler
+// Table filler doesnt fill anything
+// There are duplicates
 // Valgrind and whatever other thing
 // Thread safety
-// Make sure the whole thing is case insensitive
+// (done) Make sure the whole thing is case insensitive
+// Figure out returns of table filler
+// Clear memory in the end, consider recursive
 
 const int dataset_size = 2478; // known size of the dataset
 const int hashtable_size = (int) (dataset_size / 0.75); // setting constant hash table size
@@ -18,6 +23,7 @@ typedef struct node {
 } node;
 
 void nullifier(node* hash_table[], int size);
+void to_lower_case(char* string);
 int table_filler(node* hash_table[], FILE* file);
 float valence_analyzer(char* text, node* dataset[]);
 int hash_func(char* string);
@@ -58,6 +64,16 @@ void nullifier(node* hash_table[], int size)
     }
 }
 
+void to_lower_case(char* string)
+{
+    // converts string to all lowercase
+    while (*string)
+    {
+        *string = tolower((unsigned char) *string);
+        string++;
+    }
+}
+
 int table_filler(node* hash_table[], FILE* file) // mind access to the text
 {
     /* Takes hash table and file as input.
@@ -89,12 +105,16 @@ int table_filler(node* hash_table[], FILE* file) // mind access to the text
             char* number = strtok(NULL, "\n"); // copies the number part as string
             if (number != NULL)
             {
+                to_lower_case(string);
+
                 // Navigating towards the last node of the ll
                 unsigned int hash = hash_func(string);
-                node* cursor = hash_table[hash];
-                while (cursor != NULL)
+                node* cursor = hash_table[hash]; 
+                node* previous = NULL;
+                while (cursor != NULL) 
                 {
-                    cursor = cursor -> next;
+                    previous = cursor;
+                    cursor = cursor -> next; 
                 }
 
                 // Creating new node in the linked list
@@ -104,16 +124,32 @@ int table_filler(node* hash_table[], FILE* file) // mind access to the text
                     printf("Malloc fail\n");
                 }
 
-                // printf("PRE COPY. Word: %s, Number: %s\n", string, number); // Checking contents of fetched strings pre copy
-
                 // Filling the new node
                 strcpy(cursor -> word, string);
                 cursor -> valence = atoi(number);
-                // printf("POST COPY. Word: %s, Number: %d\n", cursor->word, cursor->valence); // checking the contents post copy
-                cursor -> next = NULL;                
+                cursor -> next = NULL;
+
+                // Handling case of empty bucket vs non-empty
+                if (previous == NULL)
+                {
+                    hash_table[hash] = cursor;
+                }
+                else
+                {
+                    previous->next = cursor;
+                }
             }
         }
         i++;
+    }
+    int j = 0;
+    for (int i = 0; i < hashtable_size; i++)
+    {
+        if (hash_table[i] != NULL)
+        {
+            j++;
+            printf("String in the hashtable #%d: %s\n", j, hash_table[i] -> word);
+        }
     }
     return 0;
 }
@@ -125,15 +161,17 @@ float valence_analyzer(char* text, node* hash_table[])
 
     int total = 0;
     int count = 0;
-    const char* delimiters = " '\",.;:!-()#%@*$[]{}\n";
+    const char* delimiters = " \",.;:!-()#%@*$[]{}\n"; // omitting ' for now
 
 
     // Check valence of the 1st word in the text
     char* string = strtok(text, delimiters);
+    to_lower_case(string);
     node* cursor = hash_table[hash_func(string)];
     while (cursor != NULL)
     {
-        printf("cursor's string: %s\n", cursor->word);
+        printf("cursor's string: %s\n", cursor->word); // temp
+        printf("string contents: %s\n", string); // temp
         if (strcasecmp(cursor->word, string) == 0)
         {
             total += cursor->valence;
@@ -148,12 +186,14 @@ float valence_analyzer(char* text, node* hash_table[])
     // Loop through the rest, getting all the valences
     while ((string = strtok(NULL, delimiters)))
     {
+        to_lower_case(string);
         printf("Next string: %s\n", string); // Debugging
         cursor = hash_table[hash_func(string)];
         while (cursor != NULL)
         {
-            printf("cursor's string: %s\n", cursor->word);
-            if (strcasecmp(cursor->word, string) == 0)
+            printf("cursor's string: %s\n", cursor->word); // temp
+            printf("string contents: %s\n", string); // temp
+            if (strcmp(cursor->word, string) == 0)
             {
                 total += cursor->valence;
                 count++;
@@ -178,6 +218,7 @@ int hash_func(char* string)
     // Takes a string, returns a hash (int)
 
     // credit this hash func, Polynomial Accumulation
+
     unsigned int hash = 0;
     int c;
     while ((c = *(string++))) // while (*(word++)) also works, but we use c to dereference only once per loop
