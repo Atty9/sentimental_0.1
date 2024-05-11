@@ -3,14 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Fix analyzer func, same logical flaw with pointers as in filler
-// Table filler doesnt fill anything
-// There are duplicates
-// Valgrind and whatever other thing
-// Thread safety
-// (done) Make sure the whole thing is case insensitive
-// Figure out returns of table filler
-// Clear memory in the end, consider recursive
+// Valgrind cleared
+// Thread safety concern?
 
 const int dataset_size = 2478; // known size of the dataset
 const int hashtable_size = (int) (dataset_size / 0.75); // setting constant hash table size
@@ -24,9 +18,11 @@ typedef struct node {
 
 void nullifier(node* hash_table[], int size);
 void to_lower_case(char* string);
-int table_filler(node* hash_table[], FILE* file);
+void table_filler(node* hash_table[], FILE* file);
 float valence_analyzer(char* text, node* dataset[]);
 int hash_func(char* string);
+void memory_cleaner(node* hash_table[]);
+void cleaner2(node* curent_node);
 
 int main(void) 
 {
@@ -47,10 +43,11 @@ int main(void)
     table_filler(hash_table, file); // what to do with returns? 
     
     // Getting the average valence of a text
-    float avg_valence = valence_analyzer(text, hash_table);
-    printf("Valence = %f\n", avg_valence);
+    printf("Valence = %f\n", valence_analyzer(text, hash_table));
 
+    // Closing files, clearing memory allocations
     fclose(file);
+    memory_cleaner(hash_table);
 
     return 0;
 }
@@ -74,7 +71,7 @@ void to_lower_case(char* string)
     }
 }
 
-int table_filler(node* hash_table[], FILE* file) // mind access to the text
+void table_filler(node* hash_table[], FILE* file) // mind access to the text
 {
     /* Takes hash table and file as input.
     Fills the table with data from the file (assumes csv) */
@@ -87,7 +84,7 @@ int table_filler(node* hash_table[], FILE* file) // mind access to the text
     if (fgets(buffer, sizeof(buffer), file) == NULL)
     {
         printf("CSV is empty or unexpected error reading the first line. Closing\n");
-        return 1;
+        return;
     }
 
     // Reading the rest of csv line by line, copying data to the hashtable
@@ -142,16 +139,7 @@ int table_filler(node* hash_table[], FILE* file) // mind access to the text
         }
         i++;
     }
-    int j = 0;
-    for (int i = 0; i < hashtable_size; i++)
-    {
-        if (hash_table[i] != NULL)
-        {
-            j++;
-            printf("String in the hashtable #%d: %s\n", j, hash_table[i] -> word);
-        }
-    }
-    return 0;
+    return;
 }
 
 float valence_analyzer(char* text, node* hash_table[])
@@ -170,33 +158,31 @@ float valence_analyzer(char* text, node* hash_table[])
     node* cursor = hash_table[hash_func(string)];
     while (cursor != NULL)
     {
-        printf("cursor's string: %s\n", cursor->word); // temp
-        printf("string contents: %s\n", string); // temp
-        if (strcasecmp(cursor->word, string) == 0)
+        if (strcmp(cursor->word, string) == 0)
         {
             total += cursor->valence;
             count++;
             break;
         }
         cursor = cursor -> next;   
-    }
-    printf("First string of the text: %s\n", string); // Debugging
-
+    } // codespace is unhappy if this comment is not here
 
     // Loop through the rest, getting all the valences
     while ((string = strtok(NULL, delimiters)))
     {
         to_lower_case(string);
-        printf("Next string: %s\n", string); // Debugging
+
         cursor = hash_table[hash_func(string)];
         while (cursor != NULL)
         {
-            printf("cursor's string: %s\n", cursor->word); // temp
-            printf("string contents: %s\n", string); // temp
+            
             if (strcmp(cursor->word, string) == 0)
             {
                 total += cursor->valence;
                 count++;
+                printf("cursor's string: %s\n", cursor->word); // temp
+                printf("cursor's number: %d\n", cursor->valence); // temp
+                printf("Total: %d, Count: %d\n", total, count); // temp
                 break;
             }
             cursor = cursor -> next;   
@@ -210,7 +196,8 @@ float valence_analyzer(char* text, node* hash_table[])
     }
 
     // Returning the average valence of the text
-    return total / hashtable_size;
+    printf("Total: %d, Count: %d\n", total, count); //temp
+    return (float) total / count;
 }
 
 int hash_func(char* string)
@@ -226,4 +213,25 @@ int hash_func(char* string)
         hash = hash * 33 + c;
     }
     return hash % hashtable_size;
+}
+
+void memory_cleaner(node* hash_table[])
+{
+    // Clears buckets of the hash table
+    for (int i = 0; i < hashtable_size; i++)
+    {
+        cleaner2(hash_table[i]);
+    }
+}
+
+void cleaner2(node* cur_node)
+{
+    // Frees allocated memory of a linked list recursively
+    if (cur_node == NULL)
+    {
+        return;
+    }
+    cleaner2(cur_node->next);
+    free(cur_node);
+    return;
 }
