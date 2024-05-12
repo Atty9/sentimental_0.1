@@ -1,6 +1,11 @@
 from flask import Flask, render_template, request
+import subprocess
 
 app = Flask(__name__)
+
+def backend_call(input):
+
+
 
 @app.route('/')
 def index():

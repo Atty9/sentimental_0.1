@@ -5,10 +5,12 @@
 
 // Valgrind cleared
 // Thread safety concern?
+// verify input is strings?
 
 const int dataset_size = 2478; // known size of the dataset
 const int hashtable_size = (int) (dataset_size / 0.75); // setting constant hash table size
-char text[] = "This company isn't good, I good abandon giga mate friend youtful zealot don't like it, it deceives, lies. Stock bad\n"; // placeholder text
+// char text[] = "This company isn't good, I good abandon giga mate friend youtful zealot don't like it, it deceives, lies. Stock bad\n"; // placeholder text
+// char text[];
 
 typedef struct node {
     char word[100]; 
@@ -18,19 +20,26 @@ typedef struct node {
 
 void nullifier(node* hash_table[], int size);
 void to_lower_case(char* string);
-void table_filler(node* hash_table[], FILE* file);
-float valence_analyzer(char* text, node* dataset[]);
+int table_filler(node* hash_table[], FILE* file);
+int valence_analyzer(char* text, node* dataset[], float* result);
 int hash_func(char* string);
 void memory_cleaner(node* hash_table[]);
 void cleaner2(node* curent_node);
 
-int main(void) 
+int main(int argc, char* argv[]) 
 {
+    // Verifying correct usage
+    if (argc < 2)
+    {
+        fprintf(stderr, "Usage: %s str1, str2, ...\n", argv[0]);
+        return 1;
+    }
+
     // Opening the dataset csv
     FILE *file = fopen("Afinn.csv", "r");
     if (file == NULL) {
-        printf("Failure opening the file\n");
-        return 1;
+        fprintf(stderr, "Failure opening Afinn.csv\n");
+        return 2;
     }
 
     // Creating hash table
@@ -40,10 +49,28 @@ int main(void)
     nullifier(hash_table, hashtable_size);
     
     // Filling hash table with data from csv 
-    table_filler(hash_table, file); // what to do with returns? 
+    if (table_filler(hash_table, file) != 0)
+    {
+        fprintf(stderr, "Error in hash table filler function\n");
+        return 3;
+    }
     
-    // Getting the average valence of a text
-    printf("Valence = %f\n", valence_analyzer(text, hash_table));
+    // Getting the average valence of each input text
+    float result[argc - 1];
+    int k = 0;
+    for (int i = 1; i < argc; i++)
+    {
+        if (valence_analyzer(argv[i], hash_table, &result[k]) == 0)
+        {
+            printf("Valence of the text #%d: %f\n", i, result[k]);
+        }
+        else
+        {
+            fprintf(stderr, "No data in valence analyzer function for text #%d\n", i);
+            // return 4;
+        }
+        k++;
+    }
 
     // Closing files, clearing memory allocations
     fclose(file);
@@ -71,7 +98,7 @@ void to_lower_case(char* string)
     }
 }
 
-void table_filler(node* hash_table[], FILE* file) // mind access to the text
+int table_filler(node* hash_table[], FILE* file) // mind access to the text
 {
     /* Takes hash table and file as input.
     Fills the table with data from the file (assumes csv) */
@@ -83,8 +110,7 @@ void table_filler(node* hash_table[], FILE* file) // mind access to the text
 
     if (fgets(buffer, sizeof(buffer), file) == NULL)
     {
-        printf("CSV is empty or unexpected error reading the first line. Closing\n");
-        return;
+        return 1;
     }
 
     // Reading the rest of csv line by line, copying data to the hashtable
@@ -118,7 +144,7 @@ void table_filler(node* hash_table[], FILE* file) // mind access to the text
                 cursor = malloc(sizeof(node));
                 if (cursor == NULL)
                 {
-                    printf("Malloc fail\n");
+                    return 2;
                 }
 
                 // Filling the new node
@@ -139,10 +165,10 @@ void table_filler(node* hash_table[], FILE* file) // mind access to the text
         }
         i++;
     }
-    return;
+    return 0;
 }
 
-float valence_analyzer(char* text, node* hash_table[])
+int valence_analyzer(char* text, node* hash_table[], float* result)
 {
     /* Takes a text as string and dictionary of words and corresponding valences as inputs.
     Returns averange valence of text as a float between -5 and 5 */
@@ -192,12 +218,13 @@ float valence_analyzer(char* text, node* hash_table[])
     // Accounting for 0 division
     if (count == 0)
     {
-        count = 1;
+        return 1;
     }
 
     // Returning the average valence of the text
     printf("Total: %d, Count: %d\n", total, count); //temp
-    return (float) total / count;
+    *result = (float) total / count;
+    return 0;
 }
 
 int hash_func(char* string)
