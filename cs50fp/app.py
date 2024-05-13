@@ -1,15 +1,11 @@
 from flask import Flask, render_template, request
-import subprocess
+import helpers
 
 app = Flask(__name__)
 
-def backend_call(input):
-
-
-
 @app.route('/')
 def index():
-    # Simply return the main page for inout
+    # Simply return the main page for input
     return render_template('layout.html')
 
 @app.route('/analyze', methods=['POST'])

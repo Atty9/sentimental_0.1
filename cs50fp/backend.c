@@ -6,6 +6,7 @@
 // Valgrind cleared
 // Thread safety concern?
 // verify input is strings?
+// Gotta copy the strings from program args because of immutability?
 
 const int dataset_size = 2478; // known size of the dataset
 const int hashtable_size = (int) (dataset_size / 0.75); // setting constant hash table size
@@ -55,19 +56,18 @@ int main(int argc, char* argv[])
         return 3;
     }
     
-    // Getting the average valence of each input text
+    // Getting the average valence of each input text and outputting for Python access
     float result[argc - 1];
     int k = 0;
     for (int i = 1; i < argc; i++)
     {
         if (valence_analyzer(argv[i], hash_table, &result[k]) == 0)
         {
-            printf("Valence of the text #%d: %f\n", i, result[k]);
+            printf("%d,%f\n", k, result[k]);
         }
         else
         {
-            fprintf(stderr, "No data in valence analyzer function for text #%d\n", i);
-            // return 4;
+            printf("%d,Valence analyzer failure\n", k);
         }
         k++;
     }
@@ -206,9 +206,9 @@ int valence_analyzer(char* text, node* hash_table[], float* result)
             {
                 total += cursor->valence;
                 count++;
-                printf("cursor's string: %s\n", cursor->word); // temp
-                printf("cursor's number: %d\n", cursor->valence); // temp
-                printf("Total: %d, Count: %d\n", total, count); // temp
+                // printf("cursor's string: %s\n", cursor->word); // temp
+                // printf("cursor's number: %d\n", cursor->valence); // temp
+                // printf("Total: %d, Count: %d\n", total, count); // temp
                 break;
             }
             cursor = cursor -> next;   
@@ -222,7 +222,7 @@ int valence_analyzer(char* text, node* hash_table[], float* result)
     }
 
     // Returning the average valence of the text
-    printf("Total: %d, Count: %d\n", total, count); //temp
+    // printf("Total: %d, Count: %d\n", total, count); //temp
     *result = (float) total / count;
     return 0;
 }
