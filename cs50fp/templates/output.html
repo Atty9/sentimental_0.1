@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+
+{% block title %}Output{% endblock %}
+
+{% block content %}
+<h1 class="mt-5">Received Data</h1>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">Text Index</th>
+            <th scope="col">Valence From -5 To 5</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for index, valence in theDict.items() %}
+        <tr>
+            <th scope="row">{{ index }}</th>
+            <td>{{ valence }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<a href="/" class="btn btn-primary">Go Back</a>
+{% endblock %}

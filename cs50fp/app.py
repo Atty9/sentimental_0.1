@@ -3,19 +3,20 @@ import helpers
 
 app = Flask(__name__)
 
-@app.route('/')
+# Plan and create SQL database for analysis history
+
+@app.route('/', methods=['GET'])
 def index():
-    # Simply return the main page for input
-    return render_template('layout.html')
+    # renders the main page (responsible for input)
+    return render_template('index.html')
 
-@app.route('/analyze', methods=['POST'])
-def analyze():
-    # Get text input from the form, the html page needs to send variable here
-    # and it needs to call /analyze
-    text = request.form['text']
-
-    # implement call to C script which would do the actual analysis.
-    # the call needs to pass the text there
-
-    return render_template('output.html', output=output)
-    # sentiment_result will be some kind of dictionary, perhaps a custom data struct
+@app.route('/output', methods=['POST'])
+def output():
+    # Handles input from the main page, calls backend, renders output
+    texts = request.form.getlist('texts')
+    output = helpers.callC(texts)
+    # add to SQL history database
+    return render_template('output.html', theDict=output)
+    
+if __name__ == '__main__':
+    app.run(debug=True)
