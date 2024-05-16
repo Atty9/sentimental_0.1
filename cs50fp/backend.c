@@ -3,15 +3,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Valgrind cleared
+
 // Thread safety concern?
-// verify input is strings?
 // Gotta copy the strings from program args because of immutability?
 
 const int dataset_size = 2478; // known size of the dataset
 const int hashtable_size = (int) (dataset_size / 0.75); // setting constant hash table size
 // char text[] = "This company isn't good, I good abandon giga mate friend youtful zealot don't like it, it deceives, lies. Stock bad\n"; // placeholder text
-// char text[];
+
 
 typedef struct node {
     char word[100]; 
@@ -32,7 +31,7 @@ int main(int argc, char* argv[])
     // Verifying correct usage
     if (argc < 2)
     {
-        fprintf(stderr, "Usage: %s str1, str2, ...\n", argv[0]);
+        fprintf(stderr, "Usage: ./%s str1, str2, ...\n", argv[0]);
         return 1;
     }
 
@@ -67,7 +66,7 @@ int main(int argc, char* argv[])
         }
         else
         {
-            printf("%d,Valence analyzer failure\n", k);
+            printf("%d,Valence analyzer failure\n", k); 
         }
         k++;
     }

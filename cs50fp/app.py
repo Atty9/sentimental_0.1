@@ -3,6 +3,7 @@ import helpers
 
 app = Flask(__name__)
 
+# Verify input
 # Plan and create SQL database for analysis history
 
 @app.route('/', methods=['GET'])
@@ -12,10 +13,16 @@ def index():
 
 @app.route('/output', methods=['POST'])
 def output():
-    # Handles input from the main page, calls backend, renders output
+    '''
+    Handles input from the main page, calls backend, renders output
+    Adds data to SQL db
+    '''
+
     texts = request.form.getlist('texts')
     output = helpers.callC(texts)
-    # add to SQL history database
+    
+    helpers.sqlInserter(texts, output)
+
     return render_template('output.html', theDict=output)
     
 if __name__ == '__main__':
