@@ -1,0 +1,17 @@
+CREATE TABLE analyses(
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    topic TEXT NOT NULL,
+    avg_valence REAL NOT NULL, 
+    avg_text_size REAL NOT NULL,
+    batch_size INTEGER,
+    datetime TEXT
+);
+
+CREATE TABLE batch_details(
+    local_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    batch_id INT NOT NULL,
+    valence REAL NOT NULL,
+    text TEXT,
+    FOREIGN KEY (batch_id)
+    REFERENCES analyses(id)
+);

@@ -3,12 +3,14 @@ import helpers
 
 app = Flask(__name__)
 
-# Verify input
-# Plan and create SQL database for analysis history
+# Verify input?
 
-@app.route('/', methods=['GET'])
+@app.route('/')
 def index():
-    # renders the main page (responsible for input)
+    '''
+    Renders the main page (responsible for input)
+    '''
+    
     return render_template('index.html')
 
 @app.route('/output', methods=['POST'])
@@ -24,6 +26,25 @@ def output():
     helpers.sqlInserter(texts, output)
 
     return render_template('output.html', theDict=output)
+
+@app.route('/history')
+def history():
+    '''
+    Renders history of analysis batches from sql db
+    Calls /details on batch details request 
+    '''
+
+    selection = helpers.sqlSelector()
+    return render_template('history.html', theDict=selection)
+
+@app.route('/details', methods=['POST'])
+def details():
+    '''
+    Render details of a batch of analysed text per input id
+    '''
+
+    selection = helpers.sqlDetailedSelector(request.form.get("id"))
+    return render_template('details.html', theDict=selection)
     
 if __name__ == '__main__':
     app.run(debug=True)
