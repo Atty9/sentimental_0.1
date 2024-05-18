@@ -3,7 +3,7 @@ import helpers
 
 app = Flask(__name__)
 
-# Verify input?
+# Anything that could go wrong with incorrect input?
 
 @app.route('/')
 def index():
@@ -23,9 +23,9 @@ def output():
     texts = request.form.getlist('texts')
     output = helpers.callC(texts)
     
-    helpers.sqlInserter(texts, output)
+    # helpers.sqlInserter(texts, output)
 
-    return render_template('output.html', theDict=output)
+    return render_template('output.html', theList=output)
 
 @app.route('/history')
 def history():

@@ -21,7 +21,7 @@ typedef struct node {
 void nullifier(node* hash_table[], int size);
 void to_lower_case(char* string);
 int table_filler(node* hash_table[], FILE* file);
-int valence_analyzer(char* text, node* dataset[], float* result);
+int valence_analyzer(char* text, node* dataset[], float* result, int* count);
 int hash_func(char* string);
 void memory_cleaner(node* hash_table[]);
 void cleaner2(node* curent_node);
@@ -57,16 +57,19 @@ int main(int argc, char* argv[])
     
     // Getting the average valence of each input text and outputting for Python access
     float result[argc - 1];
+    int count = 0;
     int k = 0;
     for (int i = 1; i < argc; i++)
     {
-        if (valence_analyzer(argv[i], hash_table, &result[k]) == 0)
+        count = 0;
+        if (valence_analyzer(argv[i], hash_table, &result[k], &count) == 0)
         {
-            printf("%d,%f\n", k, result[k]);
+            printf("%d;%f;%i\n", k, result[k], count);
         }
-        else
+        else // handles texts that had no analyzable by Afinn words
         {
-            printf("%d,Valence analyzer failure\n", k); 
+            printf("%d;0.0;0\n", k);
+            // printf("%d,Valence analyzer failure\n", k); 
         }
         k++;
     }
@@ -167,14 +170,15 @@ int table_filler(node* hash_table[], FILE* file) // mind access to the text
     return 0;
 }
 
-int valence_analyzer(char* text, node* hash_table[], float* result)
+int valence_analyzer(char* text, node* hash_table[], float* result, int* count)
 {
     /* Takes a text as string and dictionary of words and corresponding valences as inputs.
     Returns averange valence of text as a float between -5 and 5 */
 
+
     int total = 0;
-    int count = 0;
-    const char* delimiters = " \",.;:!-()#%@*$[]{}\n"; // omitting ' for now
+
+    const char* delimiters = " \",.;:!-()#%@*$[]\'{}\n"; // issue with '?
 
 
     // Check valence of the 1st word in the text
@@ -186,7 +190,7 @@ int valence_analyzer(char* text, node* hash_table[], float* result)
         if (strcmp(cursor->word, string) == 0)
         {
             total += cursor->valence;
-            count++;
+            (*count)++;
             break;
         }
         cursor = cursor -> next;   
@@ -204,7 +208,7 @@ int valence_analyzer(char* text, node* hash_table[], float* result)
             if (strcmp(cursor->word, string) == 0)
             {
                 total += cursor->valence;
-                count++;
+                (*count)++;
                 // printf("cursor's string: %s\n", cursor->word); // temp
                 // printf("cursor's number: %d\n", cursor->valence); // temp
                 // printf("Total: %d, Count: %d\n", total, count); // temp
@@ -215,14 +219,14 @@ int valence_analyzer(char* text, node* hash_table[], float* result)
     }
     
     // Accounting for 0 division
-    if (count == 0)
+    if (*count == 0)
     {
         return 1;
     }
 
-    // Returning the average valence of the text
+    // Returning the average valence of the text and number of Afinn-analyzable symbols
     // printf("Total: %d, Count: %d\n", total, count); //temp
-    *result = (float) total / count;
+    *result = (float) total / *count;
     return 0;
 }
 
