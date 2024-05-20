@@ -5,11 +5,12 @@ from datetime import datetime
 
 # Fix i iteration in output.html
 
-# Display average valence of the set of texts given 
-# Limit digits of the valences
+# DO I check sql db connection for failure? if == NULL
+# Display average valence of the set of texts given
 # Add topic input
 # Need to add to C output: size of each text, valence 0 if there was nothing to analyze
 # Create details.html
+# WOrking on the assumption that all texts are of equal value. Going forward weights may be considered
 
 
 # Have separate C file to run hash table constantly with the main one analyzing texts one by one?
@@ -22,7 +23,6 @@ def callC(args):
     '''
     
     command = ['./backend'] + args
-
     result = subprocess.run(command, capture_output = True, text = True)
 
     valences = []
@@ -30,7 +30,8 @@ def callC(args):
     if result.returncode == 0:
         for line in result.stdout.strip().split('\n'):
             data = line.split(';')
-            valences.append((float(data[1]), int(data[2])))
+            rounded = round(float(data[1]), 4)
+            valences.append((rounded, int(data[2])))
             if i != int(data[0]):
                 return "Error: Missing output from C script"
             i += 1 
@@ -40,75 +41,61 @@ def callC(args):
     
     
 
-def sqlInserter(texts, output):
-    # texts is a list of strings
-    # output is dict of indexes and valences (all type string)
-    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+def sqlInserter(texts, output, topic):
+    '''
+    Takes list of texts before analysis, output of C analysis (list of tuples) and user provided topic
+    Inserts data about analyzed batch into SQL history.db
+    '''
 
+    # connecting to the database
     connector = sqlite3.connect('history.db')
     cursor = connector.cursor()
 
-    # topic
+    # Getting batch size
+    size = len(texts)
 
-    # Calculating average valence of the batch
-    counter = 0
-    total = 0.0
-    for key, value in output.items():
-        try:
-            value = float(value)
-        except ValueError:
-            pass
-        else:
-            counter += 1
-            total += value
-    if counter == 0:
-        avg_valence = 0
-    else:
-        avg_valence = total / counter
-
-
-
-    cursor.execute('''INSERT INTO analyses (
-                            topic, 
-                            avg_valence, 
-                            avg_text_size, 
-                            batch_size,
-                            datetime
-                    ) VALUES (
-
-                            
-                    );
-
-    topic TEXT NOT NULL,
-    avg_valence REAL NOT NULL, 
-    avg_text_size REAL NOT NULL,
-    batch_size INTEGER,
-    datetime TEXT
-
-
-    ''')
-
-
-
-    # get current date and time
-    # add data to analyses table
-    # table 1: ITER INT id (unique), INT number of texts, TXT topic, DT date time, FLT? avg valence
-    # get batch id from table 1 to use in table 2
-    # table 2: ITER INT local id, INT batch number (ref id of table 1), FLT? valence, TXT text itself
+    # Getting current date and time as a string
+    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     
+
+    # Inserting into the first table of history.db
+    cursor.execute('''INSERT INTO batches (topic, size, datetime) 
+                      VALUES (?, ?, ?);''', (topic, size, now))
+
+    # Getting batch id generated in the first table
+    batch_id = cursor.lastrowid
+
+    # Inserting data into the second table
+    i = 0
+    listlen = len(texts)
+    while i < listlen:
+        cursor.execute('''INSERT INTO texts (batch_id, valence, analyzed_words, content) 
+                          VALUES (?, ?, ?, ?);''', (batch_id, output[i][0], output[i][1], texts[i]))
+
     return
 
-'''
-
-
-
-
-
-'''
-
 def sqlSelector():
-    # fetch all data off table 1
-    
+    '''
+    Fethes data from sql database, returns general information for all analyzed batches
+    '''
+
+    # connecting to the database
+    connector = sqlite3.connect('history.db')
+    cursor = connector.cursor()
+
+    cursor.execute('''SELECT  ''')
+    '''
+    SELECT
+        id,
+        topic,
+        size, 
+        datetime
+    FROM batches
+    JOIN texts 
+    ON batches.id = texts.batch_id
+    ;
+    '''
+
     return # Dict of data
 
 def sqlDetailedSelector(id):
@@ -116,4 +103,29 @@ def sqlDetailedSelector(id):
 
     return # Dict of data
 
+'''
+CREATE TABLE batches(
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    topic TEXT NOT NULL,
+    size INTEGER NOT NULL,
+    datetime TEXT NOT NULL
+);
+
+SELECT FROM texts
+    batch_id,
+    AVG(valence) AS avg_valence,
     
+    
+GROUP BY batch_id,
+DESC;
+
+CREATE TABLE texts(
+    local_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    batch_id INTEGER NOT NULL,
+    valence REAL NOT NULL,
+    analyzed_words INTEGER NOT NULL,
+    content TEXT NOT NULL,
+    FOREIGN KEY (batch_id)
+    REFERENCES batches(id)
+);
+'''

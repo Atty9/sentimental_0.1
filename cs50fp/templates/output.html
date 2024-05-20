@@ -13,15 +13,12 @@
         </tr>
     </thead>
     <tbody>
-        <!-- Fix i iteration (doesn't iterate right now) -->
-        {% set i = 0 %}
         {% for item in theList %}
         <tr>
-            <th scope="row">{{ i }}</th>
+            <th scope="row">{{ loop.index0 }}</th>
             <td>{{ item[0] }}</td>
             <td>{{ item[1] }}</td>
         </tr>
-        {% i = i + 1 %}
         {% endfor %}
     </tbody>
 </table>

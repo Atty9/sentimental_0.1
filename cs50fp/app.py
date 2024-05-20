@@ -4,6 +4,7 @@ import helpers
 app = Flask(__name__)
 
 # Anything that could go wrong with incorrect input?
+# Add error system like in finance
 
 @app.route('/')
 def index():
@@ -21,11 +22,15 @@ def output():
     '''
 
     texts = request.form.getlist('texts')
+    topic = request.form.get("topic") # check syntax, update index.html with topic input
     output = helpers.callC(texts)
     
-    # helpers.sqlInserter(texts, output)
+    if len(output) != len(texts):
+        return "Error: the texts"
 
-    return render_template('output.html', theList=output)
+    # helpers.sqlInserter(texts, output, topic)
+
+    return render_template('output.html', theList=output) # update output.html with all the SQL data
 
 @app.route('/history')
 def history():
