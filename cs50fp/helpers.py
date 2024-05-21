@@ -3,12 +3,11 @@ import sqlite3
 
 from datetime import datetime
 
+# TEST SQL functions before proceeding to updating frontend
+
 # Fix i iteration in output.html
 
-# DO I check sql db connection for failure? if == NULL
-# Display average valence of the set of texts given
 # Add topic input
-# Need to add to C output: size of each text, valence 0 if there was nothing to analyze
 # Create details.html
 # WOrking on the assumption that all texts are of equal value. Going forward weights may be considered
 
@@ -46,86 +45,109 @@ def sqlInserter(texts, output, topic):
     Takes list of texts before analysis, output of C analysis (list of tuples) and user provided topic
     Inserts data about analyzed batch into SQL history.db
     '''
-
-    # connecting to the database
-    connector = sqlite3.connect('history.db')
-    cursor = connector.cursor()
-
-    # Getting batch size
-    size = len(texts)
-
-    # Getting current date and time as a string
-    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     
+    try:
+        # Connecting to the database
+        connector = sqlite3.connect('history.db')
+        cursor = connector.cursor()
 
-    # Inserting into the first table of history.db
-    cursor.execute('''INSERT INTO batches (topic, size, datetime) 
-                      VALUES (?, ?, ?);''', (topic, size, now))
+        # Getting batch size
+        size = len(texts)
 
-    # Getting batch id generated in the first table
-    batch_id = cursor.lastrowid
+        # Getting current date and time as a string
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-    # Inserting data into the second table
-    i = 0
-    listlen = len(texts)
-    while i < listlen:
-        cursor.execute('''INSERT INTO texts (batch_id, valence, analyzed_words, content) 
-                          VALUES (?, ?, ?, ?);''', (batch_id, output[i][0], output[i][1], texts[i]))
+        # Inserting into the first table of history.db
+        cursor.execute('''INSERT INTO batches (topic, size, datetime) 
+                        VALUES (?, ?, ?);''', (topic, size, now))
+
+        # Getting batch id generated in the first table
+        batch_id = cursor.lastrowid
+
+        # Inserting data into the second table
+        i = 0
+        listlen = len(texts)
+        while i < listlen:
+            cursor.execute('''INSERT INTO texts (batch_id, valence, analyzed_words, content) 
+                            VALUES (?, ?, ?, ?);''', (batch_id, output[i][0], output[i][1], texts[i]))
+
+    except sqlite3.Error as e:
+        print(f"Error: {e}")
+
+    finally:
+        if connector:
+            connector.close()
 
     return
 
+
 def sqlSelector():
     '''
-    Fethes data from sql database, returns general information for all analyzed batches
+    Returns general information for all analyzed batches from sql db as a list of tuples
     '''
 
-    # connecting to the database
-    connector = sqlite3.connect('history.db')
-    cursor = connector.cursor()
+    try:
+        # Connecting to the database
+        connector = sqlite3.connect('history.db')
+        cursor = connector.cursor()
 
-    cursor.execute('''SELECT  ''')
-    '''
-    SELECT
-        id,
-        topic,
-        size, 
-        datetime
-    FROM batches
-    JOIN texts 
-    ON batches.id = texts.batch_id
-    ;
-    '''
+        # Fetching relevant data as a list of tuples
+        cursor.execute('''  
+                            SELECT
+                                texts.batch_id,
+                                batches.topic AS topic,
+                                batches.size AS size,
+                                batches.datetime AS datetime,
+                                AVG(texts.valence) AS avg_valence,
+                                AVG(texts.analyzed_words) AS avg_analyzed_words,
+                                AVG(length(texts.content)) AS symbols
+                            FROM texts
+                            JOIN batches
+                            ON texts.batch_id = batches.id
+                            GROUP BY batch_id 
+                            ORDER BY batch_id DESC;
+                        ''')
+        
+        theList = cursor.fetchall()
 
-    return # Dict of data
+    except sqlite3.Error as e:
+        print(f"Error: {e}")
+    
+    finally:
+        if connector:
+            connector.close()
+
+    return theList
+
 
 def sqlDetailedSelector(id):
-    # fetch data off both tables for a selected single batch id
+    '''
+    Takes in batch id
+    Returns detailed data on the batch with that id (as a list of tuples)
+    '''
 
-    return # Dict of data
+    try:
+        # Connecting to the database
+        connector = sqlite3.connect('history.db')
+        cursor = connector.cursor()
 
-'''
-CREATE TABLE batches(
-    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    topic TEXT NOT NULL,
-    size INTEGER NOT NULL,
-    datetime TEXT NOT NULL
-);
+        # Fetching details of the batch from texts table
+        cursor.execute('''
+                        SELECT 
+                            valence,
+                            analyzed_words,
+                            content
+                        FROM texts
+                        WHERE batch_id = ?
+                        ''', (id,))
+        
+        theList = cursor.fetchall()
 
-SELECT FROM texts
-    batch_id,
-    AVG(valence) AS avg_valence,
-    
-    
-GROUP BY batch_id,
-DESC;
+    except sqlite3.Error as e:
+        print(f"Error: {e}")
 
-CREATE TABLE texts(
-    local_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    batch_id INTEGER NOT NULL,
-    valence REAL NOT NULL,
-    analyzed_words INTEGER NOT NULL,
-    content TEXT NOT NULL,
-    FOREIGN KEY (batch_id)
-    REFERENCES batches(id)
-);
-'''
+    finally:
+        if connector:
+            connector.close()
+
+    return theList

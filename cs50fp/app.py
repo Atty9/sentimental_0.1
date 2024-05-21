@@ -5,6 +5,7 @@ app = Flask(__name__)
 
 # Anything that could go wrong with incorrect input?
 # Add error system like in finance
+# redundancy between output and history backend
 
 @app.route('/')
 def index():
@@ -28,7 +29,7 @@ def output():
     if len(output) != len(texts):
         return "Error: the texts"
 
-    # helpers.sqlInserter(texts, output, topic)
+    helpers.sqlInserter(texts, output, topic)
 
     return render_template('output.html', theList=output) # update output.html with all the SQL data
 
@@ -40,16 +41,16 @@ def history():
     '''
 
     selection = helpers.sqlSelector()
-    return render_template('history.html', theDict=selection)
+    return render_template('history.html', theList=selection)
 
 @app.route('/details', methods=['POST'])
 def details():
     '''
-    Render details of a batch of analysed text per input id
+    Renders details of a batch with with the input id
     '''
 
     selection = helpers.sqlDetailedSelector(request.form.get("id"))
-    return render_template('details.html', theDict=selection)
+    return render_template('details.html', theList=selection)
     
 if __name__ == '__main__':
     app.run(debug=True)
