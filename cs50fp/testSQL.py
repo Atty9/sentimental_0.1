@@ -1,44 +1,6 @@
-import subprocess
 import sqlite3
-
 from datetime import datetime
 
-# TEST SQL functions before proceeding to updating frontend
-
-# Fix i iteration in output.html
-
-# Add topic input
-# Create details.html
-# WOrking on the assumption that all texts are of equal value. Going forward weights may be considered
-
-
-# Have separate C file to run hash table constantly with the main one analyzing texts one by one?
-# ^ Potential to expand into multithreaded usage with multiple calls at the time?
-
-def callC(args):
-    '''
-    Takes a list of strings as a argument, calls C script for analysis
-    Returns a list of tuples with text valences (float) and number of words analyzed per each (int)
-    '''
-    
-    command = ['./backend'] + args
-    result = subprocess.run(command, capture_output = True, text = True)
-
-    valences = []
-    i = 0
-    if result.returncode == 0:
-        for line in result.stdout.strip().split('\n'):
-            data = line.split(';')
-            rounded = round(float(data[1]), 4)
-            valences.append((rounded, int(data[2])))
-            if i != int(data[0]):
-                return "Error: missing or escessive data in C script output"
-            i += 1 
-        return valences
-    else:
-        return "Error: " + result.stderr.strip()
-    
-    
 
 def sqlInserter(texts, output, topic):
     '''
@@ -161,3 +123,20 @@ def sqlDetailedSelector(id):
             connector.close()
 
     return theList
+
+
+texts = ["test giga duper test tasty test, mmm", "giag giga gia gia giga", "test 3 mate"]
+output = [(4.5,4),(0.0,0),(3,1)]
+topic = "giga"
+
+print("Inserter call next")
+
+sqlInserter(texts, output, topic)
+
+print("sqlSelector output below")
+
+print(sqlSelector())
+
+print("sqlDetailedSelector output below")
+
+print(sqlDetailedSelector(1))

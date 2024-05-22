@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 # Anything that could go wrong with incorrect input?
 # Add error system like in finance
-# redundancy between output and history backend
+# redundancy between output and history backend (leave history only)
 
 @app.route('/')
 def index():
