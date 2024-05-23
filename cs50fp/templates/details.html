@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Batch Details
+{% endblock %}
+
+{% block main %}
+    <h1 class="h1">Batch #{{id}}</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Valence</th>
+                <th>Analyzed Words</th>
+                <th>Content</th>
+            </tr>
+        </thead>
+        <tbody>
+            {%for row in theList%}
+            <tr>
+                <td>{{row[0]}}</td>
+                <td>{{row[1]}}</td>
+                <td>{{row[2]}}</td>    
+            </tr>
+            {%endfor%}
+        </tbody>
+    </table>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    History
+{% endblock %}
+
+{% block main %}
+    <h1 class="h1">History Of Analyses</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Batch ID</th>
+                <th>Topic</th>
+                <th>Size</th>
+                <th>Datetime</th>
+                <th>Avg Valence</th>
+                <th>Avg Analyzed Words</th>
+                <th>Average Symbols</th>
+                <th>Batch Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            {%for row in theList%}
+            <tr>
+                <td>{{row[0]}}</td>
+                <td>{{row[1]}}</td>
+                <td>{{row[2]}}</td>
+                <td>{{row[3]}}</td>
+                <td>{{row[4]}}</td>
+                <td>{{row[5]}}</td>
+                <td>{{row[6]}}</td>
+                <td>
+                    <form action="/details" method="POST">
+                        <input type="hidden" name="id" value="{{row[0]}}">
+                        <button type="submit">Details</button>
+                    </form>
+                </td>
+            </tr>
+            {%endfor%}
+        </tbody>
+    </table>
+{% endblock %}

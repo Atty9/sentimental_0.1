@@ -3,11 +3,6 @@ import sqlite3
 
 from datetime import datetime
 
-# TEST SQL functions before proceeding to updating frontend
-
-# Fix i iteration in output.html
-
-# Add topic input
 # Create details.html
 # WOrking on the assumption that all texts are of equal value. Going forward weights may be considered
 
@@ -98,13 +93,13 @@ def sqlSelector():
         # Fetching relevant data as a list of tuples
         cursor.execute('''  
                             SELECT
-                                texts.batch_id,
+                                texts.batch_id AS id,
                                 batches.topic AS topic,
                                 batches.size AS size,
                                 batches.datetime AS datetime,
                                 AVG(texts.valence) AS avg_valence,
                                 AVG(texts.analyzed_words) AS avg_analyzed_words,
-                                AVG(length(texts.content)) AS symbols
+                                AVG(length(texts.content)) AS avg_symbols
                             FROM texts
                             JOIN batches
                             ON texts.batch_id = batches.id

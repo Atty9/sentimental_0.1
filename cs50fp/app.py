@@ -3,11 +3,12 @@ import helpers
 
 app = Flask(__name__)
 
-# Anything that could go wrong with incorrect input?
-# Add error system like in finance
-# redundancy between output and history backend (leave history only)
 
-@app.route('/')
+# Add functionality to history to request details
+# Warn, truncate the topic to managable lenth
+# Add error system like in finance
+
+@app.route('/') # Add topic input on top
 def index():
     '''
     Renders the main page (responsible for input)
@@ -15,11 +16,13 @@ def index():
     
     return render_template('index.html')
 
-@app.route('/output', methods=['POST'])
+@app.route('/history', methods=['POST'])
 def output():
     '''
-    Handles input from the main page, calls backend, renders output
-    Adds data to SQL db
+    Handles input from the main page
+    Calls C script for sentiment analysis
+    Adds C output to SQL db
+    Renders history of all analyses
     '''
 
     texts = request.form.getlist('texts')
@@ -27,11 +30,12 @@ def output():
     output = helpers.callC(texts)
     
     if len(output) != len(texts):
-        return "Error: the texts"
+        return "Error: inconsistency in the number of texts in and out of C script"
 
     helpers.sqlInserter(texts, output, topic)
+    selection = helpers.sqlSelector() 
 
-    return render_template('output.html', theList=output) # update output.html with all the SQL data
+    return render_template('history.html', theList=selection)
 
 @app.route('/history')
 def history():
