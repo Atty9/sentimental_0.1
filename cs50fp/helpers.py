@@ -24,7 +24,7 @@ def callC(args):
     if result.returncode == 0:
         for line in result.stdout.strip().split('\n'):
             data = line.split(';')
-            rounded = round(float(data[1]), 4)
+            rounded = round(float(data[1]), 8)
             valences.append((rounded, int(data[2])))
             if i != int(data[0]):
                 return "Error: missing or escessive data in C script output"

@@ -2,7 +2,7 @@
 
 {% block title %}Text Input Form{% endblock %}
 
-{% block content %}
+{% block main %}
 <h1 class="mt-5">Enter Your Texts</h1>
 <form id="textForm" method="POST" action="/history">
     <div id="inputContainer">
@@ -13,7 +13,7 @@
             <input type="text" class="form-control mx-auto w-75" name="texts" placeholder="Enter text">
         </div>
     </div>
-    <button type="button" class="btn btn-primary" id="addButton">Add More Text</button>
+    <button type="button" class="btn btn-primary" id="addButton">Add Another Text</button>
     <button type="submit" class="btn btn-success">Submit</button>
 </form>
 
