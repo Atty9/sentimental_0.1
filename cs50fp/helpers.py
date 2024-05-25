@@ -3,12 +3,11 @@ import sqlite3
 
 from datetime import datetime
 
-# Create details.html
-# WOrking on the assumption that all texts are of equal value. Going forward weights may be considered
 
-
+# Working on the assumption that all texts are of equal value. Going forward weights may be considered
 # Have separate C file to run hash table constantly with the main one analyzing texts one by one?
 # ^ Potential to expand into multithreaded usage with multiple calls at the time?
+
 
 def callC(args):
     '''
@@ -27,11 +26,11 @@ def callC(args):
             rounded = round(float(data[1]), 8)
             valences.append((rounded, int(data[2])))
             if i != int(data[0]):
-                return "Error: missing or escessive data in C script output"
+                return "Missing or escessive data in C script output"
             i += 1 
         return valences
     else:
-        return "Error: " + result.stderr.strip()
+        return result.stderr.strip()
     
     
 
@@ -70,8 +69,8 @@ def sqlInserter(texts, output, topic):
         connector.commit()
 
     except sqlite3.Error as e:
-        print(f"Error: {e}")
         connector.rollback()
+        return f"{e}"
 
     finally:
         if connector:
@@ -112,8 +111,8 @@ def sqlSelector():
         connector.commit()
 
     except sqlite3.Error as e:
-        print(f"Error: {e}")
         connector.rollback()
+        return f"{e}"
 
     finally:
         if connector:
@@ -148,8 +147,8 @@ def sqlDetailedSelector(id):
         connector.commit()
 
     except sqlite3.Error as e:
-        print(f"Error: {e}")
         connector.rollback()
+        return f"{e}"
 
     finally:
         if connector:

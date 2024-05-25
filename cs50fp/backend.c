@@ -4,12 +4,11 @@
 #include <string.h>
 
 
-// Thread safety concern?
-// Gotta copy the strings from program args because of immutability?
+// Thread safety concern of strtok?
+
 
 const int dataset_size = 2478; // known size of the dataset
 const int hashtable_size = (int) (dataset_size / 0.75); // setting constant hash table size
-// char text[] = "This company isn't good, I good abandon giga mate friend youtful zealot don't like it, it deceives, lies. Stock bad\n"; // placeholder text
 
 
 typedef struct node {

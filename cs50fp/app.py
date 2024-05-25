@@ -4,7 +4,6 @@ import helpers
 app = Flask(__name__)
 
 
-# Warn, truncate the topic to managable lenth
 # Response cashing (be aware)
 
 
@@ -35,14 +34,20 @@ def history():
         return apology(400,"Topic must be under 30 symbols")
     
     output = helpers.callC(texts)
+    if isinstance(output, str):
+        return apology(500,"Internal C Error: " + output)
     if len(output) != len(texts):
-        return apology(500,"Internal Error: C input/output discrepancy")
-    
-    helpers.sqlInserter(texts, output, topic)
+        return apology(500,"Internal Error: C script input/output discrepancy")
+
+    tempOut = helpers.sqlInserter(texts, output, topic) 
+    if tempOut != None:
+        return apology(500,"Internal SQL Error: " + tempOut)
 
     selection = helpers.sqlSelector()
+    if isinstance(selection, str):
+        return apology(500,"Internal SQL Error: " + selection)
     if not selection or not any(selection):
-        return apology(500,"Internal Error: Database request failure")
+        return apology(500,"Internal Error: Database request empty output")
     
     return render_template('history.html', theList=selection)
 
@@ -58,8 +63,10 @@ def details():
         return apology(500, "Internal Error: Failure retriving batch id")
 
     selection = helpers.sqlDetailedSelector(id)
+    if isinstance(selection, str):
+        return apology(500,"Internal SQL Error: " + selection)
     if not selection or not any(selection):
-        return apology(500, "Internal Error: Database request failure")
+        return apology(500, "Internal Error: Database request empty output")
 
     return render_template('details.html', theList=selection, id=id)
 
