@@ -4,9 +4,26 @@ import sqlite3
 from datetime import datetime
 
 
+# Development thoughts
 # Working on the assumption that all texts are of equal value. Going forward weights may be considered
 # Have separate C file to run hash table constantly with the main one analyzing texts one by one?
 # ^ Potential to expand into multithreaded usage with multiple calls at the time?
+
+
+def cleanser(theList):
+    '''
+    Deletes all empty elements of a list if there are any
+    '''
+
+    i = 0
+    size = len(theList)
+    while i < size:
+        if not theList[i]:
+            del theList[i]
+            size -= 1
+            continue 
+        i += 1
+    return
 
 
 def callC(args):

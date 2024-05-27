@@ -1,10 +1,12 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Batch Details
+    Error {{error}}
 {% endblock %}
 
 {% block main %}
-    <h1 class="h1">{{error}}</h1>
-    <h1 class="h1">{{message}}</h1>
+    <div class="m-2 mb-3 mt-3 mx-auto w-100 d-flex justify-content-center align-items-center flex-column" style="height: 40vh;">
+        <h1 class="h1 display-1">Error {{error}}</h1>
+        <h1 class="h1">{{message}}</h1>
+    </div>
 {% endblock %}

@@ -4,7 +4,15 @@ import helpers
 app = Flask(__name__)
 
 
-# Response cashing (be aware)
+@app.after_request
+def after_request(response):
+    '''
+    Ensures no cache saving
+    '''
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Expires"] = 0
+    response.headers["Pragma"] = "no-cache"
+    return response
 
 
 @app.route('/')
@@ -33,6 +41,7 @@ def history():
     if len(topic) > 30:
         return apology(400,"Topic must be under 30 symbols")
     
+    helpers.cleanser(texts)
     output = helpers.callC(texts)
     if isinstance(output, str):
         return apology(500,"Internal C Error: " + output)

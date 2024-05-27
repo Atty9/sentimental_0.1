@@ -3,25 +3,28 @@
 {% block title %}Text Input Form{% endblock %}
 
 {% block main %}
-<h1 class="mt-5">Enter Your Texts</h1>
+<h1 class="h1 m-2 mb-3 mt-3 mx-auto w-75 d-flex justify-content-center align-items-center">Simple Sentiment: Input</h1>
 <form id="textForm" method="POST" action="/history">
     <div id="inputContainer">
-        <div class="mb-3">
-            <input autocomplete="off" class="form-control mx-auto w-75" name="topic" placeholder="Batch Name (Topic)" type="text">
+        <div class="m-2 mx-auto w-75">
+            <input autocomplete="off" class="form-control" name="topic" placeholder="Batch Name (Topic)" type="text">
         </div>
-        <div class="form-group">
-            <input type="text" class="form-control mx-auto w-75" name="texts" placeholder="Enter text">
+        <div class="form-group m-2 mx-auto w-75">
+            <input type="text" class="form-control" name="texts" placeholder="Enter text">
         </div>
     </div>
-    <button type="button" class="btn btn-primary" id="addButton">Add Another Text</button>
-    <button type="submit" class="btn btn-success">Submit</button>
+
+    <div class="d-flex flex-column mx-auto w-50 mt-1">
+        <button type="button" class="btn btn-primary m-1" id="addButton">Add Another Text</buttton>
+        <button type="submit" class="btn btn-success m-1">Submit</button>
+    </div>
 </form>
 
 <script>
     document.getElementById('addButton').addEventListener('click', function() {
         var inputContainer = document.getElementById('inputContainer');
         var newInput = document.createElement('div');
-        newInput.className = 'form-group';
+        newInput.className = 'form-group m-2 mx-auto w-75';
         newInput.innerHTML = '<input type="text" class="form-control" name="texts" placeholder="Enter text">';
         inputContainer.appendChild(newInput);
     });

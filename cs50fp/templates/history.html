@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block main %}
-    <h1 class="h1">History Of Analyses</h1>
+    <h1 class="h1 m-2 mb-3 mt-3 mx-auto w-100 d-flex justify-content-center align-items-center">Simple Sentiment: History</h1>
     <table>
         <thead>
             <tr>
@@ -15,7 +15,7 @@
                 <th>Datetime</th>
                 <th>Avg Valence</th>
                 <th>Avg Analyzed Words</th>
-                <th>Average Symbols</th>
+                <th>Avg Symbols</th>
                 <th>Batch Details</th>
             </tr>
         </thead>
@@ -32,7 +32,7 @@
                 <td>                 
                     <form action="/details" method="POST">
                         <input type="hidden" name="id" value="{{row[0]}}">
-                        <button type="submit">Details</button>
+                        <button type="submit" class="btn btn-primary">Details</button>
                     </form>
                 </td>
             </tr>
