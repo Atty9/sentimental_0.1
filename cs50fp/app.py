@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 import helpers
 
 app = Flask(__name__)
@@ -24,41 +24,50 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/history', methods=['POST'])
+@app.route('/history', methods=['POST', 'GET'])
 def history():
     '''
+    On POST:
     Handles input from the main page
     Calls C script for sentiment analysis of the input
     Receives C script output
     Adds output data to SQL db
     Renders history of analysis history from SQL db
+    On GET:
+    Simply renders history from SQL db
     '''
 
-    texts = request.form.getlist('texts')
-    topic = request.form.get("topic")
-    if not topic or not texts or not any(texts):
-        return apology(400,"Topic and Text fields must not be empty")
-    if len(topic) > 30:
-        return apology(400,"Topic must be under 30 symbols")
-    
-    helpers.cleanser(texts)
-    output = helpers.callC(texts)
-    if isinstance(output, str):
-        return apology(500,"Internal C Error: " + output)
-    if len(output) != len(texts):
-        return apology(500,"Internal Error: C script input/output discrepancy")
+    if request.method == 'POST':
 
-    tempOut = helpers.sqlInserter(texts, output, topic) 
-    if tempOut != None:
-        return apology(500,"Internal SQL Error: " + tempOut)
+        texts = request.form.getlist('texts')
+        topic = request.form.get("topic")
+        if not topic or not texts or not any(texts):
+            return apology(400,"Topic and Text fields must not be empty")
+        if len(topic) > 30:
+            return apology(400,"Topic must be under 30 symbols")
+        
+        helpers.cleanser(texts)
+        output = helpers.callC(texts)
+        if isinstance(output, str):
+            return apology(500,"Internal C Error: " + output)
+        if len(output) != len(texts):
+            return apology(500,"Internal Error: C script input/output discrepancy")
 
-    selection = helpers.sqlSelector()
-    if isinstance(selection, str):
-        return apology(500,"Internal SQL Error: " + selection)
-    if not selection or not any(selection):
-        return apology(500,"Internal Error: Database request empty output")
-    
-    return render_template('history.html', theList=selection)
+        tempOut = helpers.sqlInserter(texts, output, topic) 
+        if tempOut != None:
+            return apology(500,"Internal SQL Error: " + tempOut)
+
+        return redirect('/history')
+
+    else:
+
+        selection = helpers.sqlSelector()
+        if isinstance(selection, str):
+            return apology(500,"Internal SQL Error: " + selection)
+        if not selection or not any(selection):
+            return apology(500,"Internal Error: Database request empty output")
+        
+        return render_template('history.html', theList=selection)
 
 
 @app.route('/details', methods=['POST'])
