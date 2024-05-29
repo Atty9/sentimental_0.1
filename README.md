@@ -1,6 +1,5 @@
 # Sentimental 0.1
 
-#### Video Demo:  https://youtu.be/Ab9bAYUCa4s?si=4KSyOMY23Cl72Fyk
 #### Description:
 Sentimental 0.1 is an application that takes texts as input and outputs valences (positivity levels) from -5 to 5 of the texts individually and of the batch on average. 
 The backend of the application is handled by C script that runs words of every given text against the AFINN dataset and calculates average valence. 
